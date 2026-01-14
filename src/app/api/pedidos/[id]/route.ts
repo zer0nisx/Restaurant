@@ -81,11 +81,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     // Construir query de actualización
     const updates: string[] = [];
-    const params: any[] = [];
+    const queryParams: any[] = [];
 
     if (estadoPedido) {
       updates.push('estadoPedido = ?');
-      params.push(estadoPedido);
+      queryParams.push(estadoPedido);
 
       // Si se marca como entregado, actualizar fecha de entrega
       if (estadoPedido === 'Entregado') {
@@ -95,23 +95,23 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     if (estadoEntrega) {
       updates.push('estadoEntrega = ?');
-      params.push(estadoEntrega);
+      queryParams.push(estadoEntrega);
     }
 
     if (personal_entrega_id !== undefined) {
       updates.push('personal_entrega_id = ?');
-      params.push(personal_entrega_id || null);
+      queryParams.push(personal_entrega_id || null);
 
       // Si se asigna repartidor, actualizar estado
       if (personal_entrega_id && estadoPedido !== 'Cancelado') {
         updates.push('estadoPedido = ?');
-        params.push('En preparación');
+        queryParams.push('En preparación');
       }
     }
 
     if (tiempo_estimado) {
       updates.push('tiempo_estimado = ?');
-      params.push(tiempo_estimado);
+      queryParams.push(tiempo_estimado);
     }
 
     if (updates.length === 0) {
@@ -121,12 +121,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    params.push(id);
+    queryParams.push(id);
 
     // Actualizar pedido
     db.prepare(`
       UPDATE pedido SET ${updates.join(', ')} WHERE id = ?
-    `).run(...params);
+    `).run(...queryParams);
 
     // Obtener pedido actualizado
     const pedidoActualizado = db.prepare(`

@@ -1,20 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { verifyAuth } from '@/lib/auth';
-import { cookies } from 'next/headers';
+import { requireAuth } from '@/lib/auth';
 
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth-token')?.value;
+    // Verificar autenticación y que sea administrador
+    const session = await requireAuth(['Administrador']);
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
-
-    const payload = await verifyAuth(token);
-    if (!payload || payload.rol !== 'Administrador') {
-      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
     }
 
     const db = getDb();
